@@ -58,11 +58,11 @@ IntelliJ IDEA plugin that copies uncommitted Git changes to clipboard in a reada
 ./gradlew buildPlugin
 ```
 
-Output: `build/distributions/Git-Changes-1.0.zip`
+Output: `build/distributions/Git-Changes-<version>.zip`
 
 ## Requirements
 
-- IntelliJ IDEA 2025.1.4+
+- IntelliJ IDEA 2023.3+
 - Git version control
 
 ## License
