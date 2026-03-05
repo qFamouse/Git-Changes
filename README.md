@@ -6,6 +6,7 @@ IntelliJ IDEA plugin that copies uncommitted Git changes to clipboard in a reada
 
 - View uncommitted changes (added, modified, deleted files)
 - Works with selected files in Commit tool window
+- Three copy modes: full content, only changed parts, paths only
 - Automatically copies formatted output to clipboard
 - Shows relative paths from Git repository root
 
@@ -21,10 +22,15 @@ IntelliJ IDEA plugin that copies uncommitted Git changes to clipboard in a reada
 
 1. Select files in the Commit tool window (left panel)
 2. Right-click on selected files
-3. Choose **"Copy Changes to Clipboard"**
+3. Choose **"Copy Changes"** → select one of the modes:
+    - **Full Content** — full before/after file content
+    - **Only Changed Parts** — only modified lines with line numbers
+    - **Paths Only** — only file paths with change type
 4. Changes are now in your clipboard
 
 ## Output Format
+
+### Full Content
 
 **Modified files:**
 ```
@@ -51,6 +57,30 @@ IntelliJ IDEA plugin that copies uncommitted Git changes to clipboard in a reada
 <file content>
 
 ---
+```
+
+### Only Changed Parts
+
+**Modified files:**
+```
+Изменено (path/to/file):
+
+- Было (строки 3-5):
+  <old lines>
++ Стало (строки 3-6):
+  <new lines>
+
+---
+```
+
+**Added/Deleted files:** same as Full Content mode.
+
+### Paths Only
+
+```
+Изменено: path/to/file
+Добавлено: path/to/file
+Удалено: path/to/file
 ```
 
 ## Build from Source
