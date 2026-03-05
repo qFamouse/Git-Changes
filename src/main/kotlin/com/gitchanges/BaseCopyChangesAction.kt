@@ -12,15 +12,13 @@ import com.intellij.openapi.vcs.changes.ChangeListManager
 import com.intellij.openapi.vcs.changes.ui.ChangesListView
 import java.awt.datatransfer.StringSelection
 
-class ShowUncommittedChangesAction : AnAction() {
+abstract class BaseCopyChangesAction : AnAction() {
     override fun getActionUpdateThread(): com.intellij.openapi.actionSystem.ActionUpdateThread {
         return com.intellij.openapi.actionSystem.ActionUpdateThread.BGT
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project: Project = e.project ?: return
-
-        // Получить выбранные изменения
         val selectedChanges = getSelectedChanges(e)
 
         if (selectedChanges.isEmpty()) {
@@ -33,14 +31,11 @@ class ShowUncommittedChangesAction : AnAction() {
             return
         }
 
-        // Обработать изменения
-        val result = processChanges(selectedChanges, project)
+        val result = formatChanges(selectedChanges, project)
 
-        // Скопировать в буфер обмена
         val selection = StringSelection(result)
         CopyPasteManager.getInstance().setContents(selection)
 
-        // Показать уведомление
         Messages.showMessageDialog(
             project,
             "Changes copied to clipboard (${selectedChanges.size} files)",
@@ -55,14 +50,14 @@ class ShowUncommittedChangesAction : AnAction() {
         e.presentation.isEnabled = project != null && selectedChanges.isNotEmpty()
     }
 
-    private fun getSelectedChanges(e: AnActionEvent): List<Change> {
-        // Попытка получить выбранные изменения из ChangesListView
+    protected abstract fun formatChanges(changes: List<Change>, project: Project): String
+
+    protected fun getSelectedChanges(e: AnActionEvent): List<Change> {
         val changesView = e.getData(ChangesListView.DATA_KEY)
         if (changesView != null) {
             return changesView.selectedChanges.toList()
         }
 
-        // Альтернативный способ: получить из VirtualFile
         val virtualFiles = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
         if (virtualFiles != null && virtualFiles.isNotEmpty()) {
             val project = e.project ?: return emptyList()
@@ -73,50 +68,7 @@ class ShowUncommittedChangesAction : AnAction() {
         return emptyList()
     }
 
-    private fun processChanges(changes: List<Change>, project: Project): String {
-        val result = StringBuilder()
-
-        changes.forEach { change ->
-            when {
-                // Измененный файл
-                change.beforeRevision != null && change.afterRevision != null -> {
-                    val path = getRelativePathFromGitRoot(change.afterRevision!!.file, project)
-                    val oldContent = change.beforeRevision!!.content ?: ""
-                    val newContent = change.afterRevision!!.content ?: ""
-
-                    result.append("Было ($path):\n")
-                    result.append(oldContent)
-                    result.append("\n\nСтало:\n")
-                    result.append(newContent)
-                    result.append("\n\n---\n\n")
-                }
-
-                // Добавленный файл
-                change.beforeRevision == null && change.afterRevision != null -> {
-                    val path = getRelativePathFromGitRoot(change.afterRevision!!.file, project)
-                    val content = change.afterRevision!!.content ?: ""
-
-                    result.append("Добавлено ($path):\n")
-                    result.append(content)
-                    result.append("\n\n---\n\n")
-                }
-
-                // Удаленный файл
-                change.beforeRevision != null && change.afterRevision == null -> {
-                    val path = getRelativePathFromGitRoot(change.beforeRevision!!.file, project)
-                    val content = change.beforeRevision!!.content ?: ""
-
-                    result.append("Удалено ($path):\n")
-                    result.append(content)
-                    result.append("\n\n---\n\n")
-                }
-            }
-        }
-
-        return result.toString()
-    }
-
-    private fun getRelativePathFromGitRoot(filePath: com.intellij.openapi.vcs.FilePath, project: Project): String {
+    protected fun getRelativePathFromGitRoot(filePath: com.intellij.openapi.vcs.FilePath, project: Project): String {
         val vcsManager = ProjectLevelVcsManager.getInstance(project)
         val vcsRoot = vcsManager.getVcsRootFor(filePath)
 
@@ -129,7 +81,6 @@ class ShowUncommittedChangesAction : AnAction() {
                 filePath.path
             }
 
-            // Убираем корень репозитория из пути
             val relativePath = absolutePath.replace("\\", "/").removePrefix(rootPath.replace("\\", "/")).removePrefix("/")
             relativePath
         } else {

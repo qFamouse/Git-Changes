@@ -30,12 +30,28 @@
     </extensions>
 
     <actions>
-        <action id="com.gitchanges.ShowUncommittedChanges"
-                class="com.gitchanges.ShowUncommittedChangesAction"
-                text="Copy Changes to Clipboard"
-                description="Copy uncommitted changes to clipboard">
+        <group id="com.gitchanges.CopyChangesGroup"
+               text="Copy Changes"
+               description="Copy changes to clipboard"
+               popup="true">
+
+            <action id="com.gitchanges.CopyFullChanges"
+                    class="com.gitchanges.CopyFullChangesAction"
+                    text="Full Content"
+                    description="Copy full file contents"/>
+
+            <action id="com.gitchanges.CopyDiffChanges"
+                    class="com.gitchanges.CopyDiffChangesAction"
+                    text="Only Changed Parts"
+                    description="Copy only modified lines"/>
+
+            <action id="com.gitchanges.CopyPathsOnly"
+                    class="com.gitchanges.CopyPathsOnlyAction"
+                    text="Paths Only"
+                    description="Copy only file paths"/>
+
             <add-to-group group-id="ChangesViewPopupMenu" anchor="last"/>
             <add-to-group group-id="Vcs.MessageActionGroup" anchor="last"/>
-        </action>
+        </group>
     </actions>
 </idea-plugin>
